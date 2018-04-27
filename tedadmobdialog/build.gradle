@@ -1,0 +1,33 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion versions.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion versions.minSdkVersion
+        targetSdkVersion versions.targetSdkVersion
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation deps.support.appcompat
+    api 'com.google.firebase:firebase-ads:15.0.0'
+    api("com.facebook.android:audience-network-sdk:${versions.fan}") {
+        exclude group: "com.google.android.gms"
+    }
+    implementation "com.google.ads.mediation:facebook:${versions.fan}.0"
+    implementation deps.glide.glide
+    annotationProcessor deps.glide.compiler
+}
+apply from: rootProject.file('publish.gradle')

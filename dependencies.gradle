@@ -1,0 +1,23 @@
+ext {
+    versions = [
+            'minSdkVersion'    : 17,
+            'compileSdkVersion': 27,
+            'targetSdkVersion' : 25,
+
+            'supportLibrary'   : '27.1.1',
+            'fan'              : '4.27.0',
+    ]
+
+    deps = [
+
+            'glide'  : [
+                    'glide':'com.github.bumptech.glide:glide:4.7.1',
+                    'compiler':'com.github.bumptech.glide:compiler:4.7.1',
+            ],
+
+            'support': [
+                    'appcompat': "com.android.support:appcompat-v7:${versions.supportLibrary}",
+            ],
+
+    ]
+}
