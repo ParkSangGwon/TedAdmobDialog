@@ -71,21 +71,20 @@
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxHeight="300dp">
+                    android:layout_height="wrap_content">
 
                     <ImageView
                         android:id="@+id/iv_image"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:adjustViewBounds="true"
+                        android:maxHeight="200dp"
                         tools:ignore="ContentDescription" />
 
                     <com.google.android.gms.ads.formats.MediaView
                         android:id="@+id/mediaview"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal" />
+                        android:layout_height="200dp" />
                 </RelativeLayout>
 
                 <LinearLayout

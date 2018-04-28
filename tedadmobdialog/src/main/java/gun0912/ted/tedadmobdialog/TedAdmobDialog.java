@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.ads.mediation.facebook.FacebookAdapter;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
@@ -191,7 +192,15 @@ public class TedAdmobDialog extends AlertDialog {
         }
 
         AdLoader adLoader = adLoaderBuilder.build();
-        adLoader.loadAd(new AdRequest.Builder().build());
+
+        Bundle extras = new FacebookAdapter.FacebookExtrasBundleBuilder()
+                .setNativeAdChoicesIconExpandable(true)
+                .build();
+        AdRequest adRequest = new AdRequest.Builder()
+                .addNetworkExtrasBundle(FacebookAdapter.class, extras)
+                .build();
+
+        adLoader.loadAd(adRequest);
     }
 
     private void showBanner(LinearLayout bannerContainer) {
