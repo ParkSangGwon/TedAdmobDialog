@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.v7.app.AlertDialog;
-
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -228,15 +227,17 @@ public class TedAdmobDialog extends AlertDialog {
         ImageView ivImage = adView.findViewById(R.id.iv_image);
         MediaView mediaView = adView.findViewById(R.id.mediaview);
 
+        ivImage.setVisibility(View.GONE);
+        mediaView.setVisibility(View.GONE);
+        List<NativeAd.Image> images = nativeAd.getImages();
         if (vc.hasVideoContent()) {
             adView.setMediaView(mediaView);
-            ivImage.setVisibility(View.GONE);
-        } else {
-            adView.setImageView(ivImage);
-            mediaView.setVisibility(View.GONE);
-            List<NativeAd.Image> images = nativeAd.getImages();
-            ivImage.setImageDrawable(images.get(0).getDrawable());
+            mediaView.setVisibility(View.VISIBLE);
 
+        } else if(images != null && !images.isEmpty()){
+            adView.setImageView(ivImage);
+            ivImage.setVisibility(View.VISIBLE);
+            ivImage.setImageDrawable(images.get(0).getDrawable());
         }
 
         adView.setHeadlineView(adView.findViewById(R.id.tv_name));
