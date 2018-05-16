@@ -27,6 +27,10 @@ import com.google.android.gms.ads.VideoOptions;
 import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.formats.NativeAppInstallAd;
+import com.google.android.gms.ads.formats.NativeAppInstallAdView;
+import com.google.android.gms.ads.formats.NativeContentAd;
+import com.google.android.gms.ads.formats.NativeContentAdView;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
@@ -37,20 +41,13 @@ import java.util.List;
 
 public class TedAdmobDialog extends AlertDialog {
     private static final String TAG = "ted";
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({AdType.NATIVE, AdType.BANNER})
-    public @interface AdType {
-        int NATIVE = 1;
-        int BANNER = 2;
-    }
-
-    private UnifiedNativeAdView unifiedNativeAdView;
+    private NativeAppInstallAdView nativeAppInstallAdView;
+    private NativeContentAdView nativeContentAdView;
     private ProgressBar progressView;
     private LinearLayout bannerContainer;
-
-    private UnifiedNativeAd nativeAd;
     private Builder builder;
+    private NativeAppInstallAd nativeAppInstallAd;
+    private NativeContentAd nativeContentAd;
 
     public TedAdmobDialog(Builder builder, int theme) {
         super(builder.context, theme);
@@ -77,7 +74,8 @@ public class TedAdmobDialog extends AlertDialog {
                 progressView.setVisibility(View.VISIBLE);
                 bannerContainer.setVisibility(View.GONE);
                 bannerContainer.removeAllViews();
-                unifiedNativeAdView.setVisibility(View.GONE);
+                nativeAppInstallAdView.setVisibility(View.GONE);
+                nativeContentAdView.setVisibility(View.GONE);
                 switch (builder.adType) {
                     case AdType.BANNER:
                         showBanner(bannerContainer);
@@ -91,7 +89,8 @@ public class TedAdmobDialog extends AlertDialog {
     }
 
     private void initView() {
-        unifiedNativeAdView = findViewById(R.id.unifiedNativeAdView);
+        nativeAppInstallAdView = findViewById(R.id.nativeAppInstallAdView);
+        nativeContentAdView = findViewById(R.id.nativeContentAdView);
         progressView = findViewById(R.id.progressView);
         bannerContainer = findViewById(R.id.view_banner_container);
         findViewById(R.id.tv_finish).setOnClickListener(new View.OnClickListener() {
@@ -146,14 +145,18 @@ public class TedAdmobDialog extends AlertDialog {
 
     private void showNative() {
 
-        if (nativeAd != null) {
-            bindNativeView(nativeAd, unifiedNativeAdView);
-            nativeAd = null;
-        } else {
+        if (nativeAppInstallAd != null) {
+            bindNativeView(nativeAppInstallAd, nativeAppInstallAdView);
+            nativeAppInstallAd = null;
+        }else if(nativeContentAd!=null){
+            bindNativeView(nativeContentAd, nativeContentAdView);
+            nativeContentAd = null;
+        } else{
             loadNative(false);
         }
 
     }
+
 
     public void loadNative() {
         loadNative(true);
@@ -163,18 +166,25 @@ public class TedAdmobDialog extends AlertDialog {
         Log.d(TAG, "loadNative()");
         AdLoader.Builder adLoaderBuilder = new AdLoader.Builder(getContext(), builder.unitId);
 
-        adLoaderBuilder.forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-
-            @Override
-            public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                Log.d(TAG, "onUnifiedNativeAdLoaded()");
-                nativeAd = unifiedNativeAd;
-                if (!preLoad) {
-                    showNative();
-                }
-            }
-
-        });
+        adLoaderBuilder
+                .forAppInstallAd(new NativeAppInstallAd.OnAppInstallAdLoadedListener() {
+                    @Override
+                    public void onAppInstallAdLoaded(NativeAppInstallAd temp) {
+                        nativeAppInstallAd = temp;
+                        if (!preLoad) {
+                            showNative();
+                        }
+                    }
+                })
+                .forContentAd(new NativeContentAd.OnContentAdLoadedListener() {
+                    @Override
+                    public void onContentAdLoaded(NativeContentAd temp) {
+                        nativeContentAd = temp;
+                        if (!preLoad) {
+                            showNative();
+                        }
+                    }
+                });
 
         VideoOptions videoOptions = new VideoOptions.Builder()
                 .setStartMuted(this.builder.startMute)
@@ -219,6 +229,121 @@ public class TedAdmobDialog extends AlertDialog {
         }
     }
 
+    private void bindNativeView(NativeContentAd nativeAd, NativeContentAdView adView) {
+        Log.d(TAG, "bindNativeView() NativeContentAd");
+        VideoController vc = nativeAd.getVideoController();
+
+        ImageView ivImage = adView.findViewById(R.id.iv_image);
+        MediaView mediaView = adView.findViewById(R.id.mediaview);
+
+        ivImage.setVisibility(View.GONE);
+        mediaView.setVisibility(View.GONE);
+        List<NativeAd.Image> images = nativeAd.getImages();
+        if (vc.hasVideoContent()) {
+            adView.setMediaView(mediaView);
+            mediaView.setVisibility(View.VISIBLE);
+
+        } else if (images != null && !images.isEmpty()) {
+            adView.setImageView(ivImage);
+            ivImage.setVisibility(View.VISIBLE);
+            ivImage.setImageDrawable(images.get(0).getDrawable());
+        }
+
+        adView.setHeadlineView(adView.findViewById(R.id.tv_name));
+        adView.setBodyView(adView.findViewById(R.id.tv_body));
+        adView.setCallToActionView(adView.findViewById(R.id.tv_call_to_action));
+        adView.setLogoView(adView.findViewById(R.id.iv_logo));
+        adView.setAdvertiserView(adView.findViewById(R.id.tv_etc));
+
+        // Some assets are guaranteed to be in every UnifiedNativeAd.
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+        ((TextView) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+
+        // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
+        // check before trying to display them.
+        if (nativeAd.getLogo() == null) {
+            adView.getLogoView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getLogoView()).setImageDrawable(nativeAd.getLogo().getDrawable());
+            adView.getLogoView().setVisibility(View.VISIBLE);
+        }
+
+
+        if (nativeAd.getAdvertiser() == null) {
+            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
+        } else {
+            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+        }
+
+        adView.setNativeAd(nativeAd);
+        nativeAppInstallAdView.setVisibility(View.VISIBLE);
+        nativeContentAdView.setVisibility(View.VISIBLE);
+        progressView.setVisibility(View.GONE);
+
+        if (builder.onBackPressListener != null) {
+            builder.onBackPressListener.onAdShow();
+        }
+    }
+
+    private void bindNativeView(NativeAppInstallAd nativeAd, NativeAppInstallAdView adView) {
+        Log.d(TAG, "bindNativeView() NativeAppInstallAd");
+        VideoController vc = nativeAd.getVideoController();
+
+        ImageView ivImage = adView.findViewById(R.id.iv_image);
+        MediaView mediaView = adView.findViewById(R.id.mediaview);
+
+        ivImage.setVisibility(View.GONE);
+        mediaView.setVisibility(View.GONE);
+        List<NativeAd.Image> images = nativeAd.getImages();
+        if (vc.hasVideoContent()) {
+            adView.setMediaView(mediaView);
+            mediaView.setVisibility(View.VISIBLE);
+
+        } else if (images != null && !images.isEmpty()) {
+            adView.setImageView(ivImage);
+            ivImage.setVisibility(View.VISIBLE);
+            ivImage.setImageDrawable(images.get(0).getDrawable());
+        }
+
+        adView.setHeadlineView(adView.findViewById(R.id.tv_name));
+        adView.setBodyView(adView.findViewById(R.id.tv_body));
+        adView.setCallToActionView(adView.findViewById(R.id.tv_call_to_action));
+        adView.setIconView(adView.findViewById(R.id.iv_logo));
+        adView.setStoreView(adView.findViewById(R.id.tv_etc));
+
+        // Some assets are guaranteed to be in every UnifiedNativeAd.
+        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+        ((TextView) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+
+        // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
+        // check before trying to display them.
+        if (nativeAd.getIcon() == null) {
+            adView.getIconView().setVisibility(View.GONE);
+        } else {
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
+        }
+
+
+        if (nativeAd.getStore() == null) {
+            adView.getStoreView().setVisibility(View.INVISIBLE);
+        } else {
+            ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
+            adView.getStoreView().setVisibility(View.VISIBLE);
+        }
+
+        adView.setNativeAd(nativeAd);
+        nativeAppInstallAdView.setVisibility(View.VISIBLE);
+        nativeContentAdView.setVisibility(View.VISIBLE);
+        progressView.setVisibility(View.GONE);
+
+        if (builder.onBackPressListener != null) {
+            builder.onBackPressListener.onAdShow();
+        }
+    }
 
     private void bindNativeView(UnifiedNativeAd nativeAd, UnifiedNativeAdView adView) {
         Log.d(TAG, "bindNativeView()");
@@ -234,7 +359,7 @@ public class TedAdmobDialog extends AlertDialog {
             adView.setMediaView(mediaView);
             mediaView.setVisibility(View.VISIBLE);
 
-        } else if(images != null && !images.isEmpty()){
+        } else if (images != null && !images.isEmpty()) {
             adView.setImageView(ivImage);
             ivImage.setVisibility(View.VISIBLE);
             ivImage.setImageDrawable(images.get(0).getDrawable());
@@ -276,6 +401,14 @@ public class TedAdmobDialog extends AlertDialog {
             builder.onBackPressListener.onAdShow();
         }
 
+    }
+
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({AdType.NATIVE, AdType.BANNER})
+    public @interface AdType {
+        int NATIVE = 1;
+        int BANNER = 2;
     }
 
     public static class Builder {
