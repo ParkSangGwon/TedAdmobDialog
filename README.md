@@ -75,7 +75,7 @@ You can use 2 type advertise
 
 ### 1. Pre loading
 - Make your TedAdmobDialog instance.
-- And pre load advertise using `TedAdmobDialog::loadNative()`
+- And pre load advertise using `TedAdmobDialog::loadAd()`
 ```java
  nativeTedAdmobDialog = new TedAdmobDialog.Builder(this, TedAdmobDialog.AdType.NATIVE, AD_TEST_KEY_NATIVE)
          .setOnBackPressListener(new OnBackPressListener() {
@@ -91,12 +91,12 @@ You can use 2 type advertise
 
              @Override
              public void onAdShow() {
-                 nativeTedAdmobDialog.loadNative();
+                 nativeTedAdmobDialog.loadAd();
              }
          })
          .create();
 
- nativeTedAdmobDialog.loadNative();
+ nativeTedAdmobDialog.loadAd();
 
 ```
 - When advertise shown, pre load again in `onAdShow()`
