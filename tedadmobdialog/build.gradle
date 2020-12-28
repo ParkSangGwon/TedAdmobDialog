@@ -21,8 +21,9 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation deps.support.appcompat
-    api 'com.google.firebase:firebase-ads:15.0.0'
+    implementation deps.androidx.support
+    implementation deps.material
+    api 'com.google.firebase:firebase-ads:19.6.0'
     api("com.facebook.android:audience-network-sdk:${versions.fan}") {
         exclude group: "com.google.android.gms"
     }

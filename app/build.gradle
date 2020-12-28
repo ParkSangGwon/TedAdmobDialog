@@ -20,6 +20,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':tedadmobdialog')
-    implementation deps.support.appcompat
+    implementation deps.androidx.support
+    implementation deps.material
 
 }

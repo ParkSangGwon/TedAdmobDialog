@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -15,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.IntDef;
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.ads.mediation.facebook.FacebookAdapter;
 import com.google.android.gms.ads.AdListener;
@@ -202,11 +203,8 @@ public class TedAdmobDialog extends AlertDialog {
 
         AdLoader adLoader = adLoaderBuilder.build();
 
-        Bundle extras = new FacebookAdapter.FacebookExtrasBundleBuilder()
-                .setNativeAdChoicesIconExpandable(true)
-                .build();
         AdRequest adRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(FacebookAdapter.class, extras)
+                //.addNetworkExtrasBundle(FacebookAdapter.class, extras)
                 .build();
 
         adLoader.loadAd(adRequest);
